@@ -1,0 +1,43 @@
+# systemd/bandwidth-collector.service
+# Install: cp this file to /etc/systemd/system/
+#          systemctl daemon-reload
+#          systemctl enable --now bandwidth-collector
+
+[Unit]
+Description=Bandwidth Monitor – Interface Collector Daemon
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+
+WorkingDirectory=/var/www/bandwidth-monitor/backend/collector
+
+# Use the virtualenv Python.
+ExecStart=/var/www/bandwidth-monitor/backend/collector/venv/bin/python \
+          /var/www/bandwidth-monitor/backend/collector/collector.py \
+          --config /var/www/bandwidth-monitor/config/collector_config.json
+
+# Restart on failure, with exponential backoff cap at 30s.
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=120
+StartLimitBurst=5
+
+# Hardening.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log /tmp
+
+# Environment (alternative to collector_config.json secrets).
+# EnvironmentFile=/etc/bandwidth-monitor/collector.env
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bw-collector
+
+[Install]
+WantedBy=multi-user.target

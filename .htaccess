@@ -1,0 +1,50 @@
+# .htaccess  (project root – Apache document root)
+# Requires: mod_rewrite, mod_headers
+
+Options -Indexes
+RewriteEngine On
+
+# ── Security headers ─────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options         "DENY"
+    Header always set X-Content-Type-Options  "nosniff"
+    Header always set Referrer-Policy         "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy      "camera=(), microphone=(), geolocation=()"
+    Header always set Content-Security-Policy "default-src 'self' https://cdn.tailwindcss.com \
+        https://cdnjs.cloudflare.com; img-src 'self' data:; \
+        style-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; \
+        script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com 'unsafe-inline'"
+</IfModule>
+
+# ── Block direct access to sensitive directories ─────────────
+RewriteRule ^(config|lib|backend/collector|systemd)(/|$) - [F,L]
+
+# ── Block access to raw .json config files ───────────────────
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>
+
+# ── Route /api/* to backend/api/ ─────────────────────────────
+# /api/login                → backend/api/login.php
+# /api/logout               → backend/api/logout.php
+# /api/pops                 → backend/api/pops.php
+# /api/interfaces           → backend/api/interfaces.php
+# /api/interface/{id}/live  → backend/api/interface_live.php?id={id}
+# /api/interface/{id}/history → backend/api/interface_history.php?id={id}
+
+RewriteRule ^api/login$                     backend/api/login.php    [L,QSA]
+RewriteRule ^api/logout$                    backend/api/logout.php   [L,QSA]
+RewriteRule ^api/pops$                      backend/api/pops.php     [L,QSA]
+RewriteRule ^api/interfaces$               backend/api/interfaces.php [L,QSA]
+RewriteRule ^api/interface/([0-9]+)/live$  backend/api/interface_live.php?id=$1    [L,QSA]
+RewriteRule ^api/interface/([0-9]+)/history$ backend/api/interface_history.php?id=$1 [L,QSA]
+
+# ── Root redirect → login ────────────────────────────────────
+RewriteRule ^$  frontend/login.php  [L,R=302]
+
+# ── PHP error display (off in production) ───────────────────
+<IfModule mod_php.c>
+    php_flag  display_errors   Off
+    php_flag  log_errors       On
+    php_value error_log        /var/log/bandwidth-monitor-php.log
+</IfModule>

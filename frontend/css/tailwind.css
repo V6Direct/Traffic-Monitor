@@ -1,0 +1,49 @@
+/*
+ * frontend/css/tailwind.css
+ *
+ * Custom CSS additions layered on top of the Tailwind CDN.
+ * Tailwind itself is loaded via CDN <script> in each PHP template.
+ * Add project-specific overrides here.
+ */
+
+/* ── Smooth transitions for dropdowns and cards ── */
+select, input, button {
+    transition: border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+/* ── Numeric display ── prevent layout shift on value change ── */
+#liveIn, #liveOut {
+    font-variant-numeric: tabular-nums;
+    min-width: 5ch;
+}
+
+/* ── Chart canvas ── fill its container height ── */
+canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ── History table ── zebra striping ── */
+#historyTable tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Sortable column hover ── */
+#historyTable th.sortable:hover {
+    color: #ffffff;
+}
+
+/* ── Status dot pulse animation ── */
+@keyframes ping {
+    75%, 100% { transform: scale(2); opacity: 0; }
+}
+.animate-ping {
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* ── Scrollbar (Webkit) ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1e293b; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
